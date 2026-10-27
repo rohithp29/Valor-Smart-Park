@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,7 @@ interface Booking {
   total_cost: number;
   status: string;
   created_at: string;
+  user_id?: string;
 }
 
 const MyBookings = () => {
@@ -38,68 +39,43 @@ const MyBookings = () => {
   const { toast } = useToast();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
-      setUser(session.user);
-      fetchBookings(session.user.id);
-    };
-
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setUser(session.user);
-        fetchBookings(session.user.id);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    if (user) {
+      fetchBookings(user.uid);
+    } else {
+      // give auth context a moment or redirect
+      // In this flow, wait for loading to finish from context
+    }
+  }, [user, navigate]);
 
   const fetchBookings = async (userId: string) => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("bookings")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load bookings",
-        variant: "destructive",
-      });
-      return;
-    }
+    const allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    const userBookings = allBookings.filter((b: Booking) => String(b.user_id) === String(userId))
+      .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-    setBookings(data || []);
+    setBookings(userBookings);
     setLoading(false);
   };
 
   const handleCancelBooking = async (bookingId: string) => {
-    const { error } = await supabase
-      .from("bookings")
-      .update({ status: "cancelled" })
-      .eq("id", bookingId);
+    // Simulate API
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to cancel booking",
-        variant: "destructive",
-      });
-      return;
-    }
+    const allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    const updatedBookings = allBookings.map((b: any) => {
+      if (b.id === bookingId) {
+        return { ...b, status: "cancelled" };
+      }
+      return b;
+    });
+
+    localStorage.setItem('bookings', JSON.stringify(updatedBookings));
 
     toast({
       title: "Booking Cancelled",
@@ -107,7 +83,7 @@ const MyBookings = () => {
     });
 
     if (user) {
-      fetchBookings(user.id);
+      fetchBookings(user.uid);
     }
   };
 

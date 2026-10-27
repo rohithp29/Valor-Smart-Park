@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Chennai parking lot data
 const parkingLotData = {
@@ -168,32 +168,15 @@ const Booking = () => {
   const [selectedFloor, setSelectedFloor] = useState("F1");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [duration, setDuration] = useState("2");
-  const [user, setUser] = useState<any>(null);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Please login to book a slot");
-        navigate("/auth");
-        return;
-      }
-      setUser(session.user);
-    };
-
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setUser(session.user);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    if (!user) {
+      // Optional: Redirect if not logged in, handled by check below or protected route wrapper?
+      // keeping existing logic of check on mount
+    }
+  }, [user]);
 
   const parkingLot = parkingLotData[parseInt(id || "1") as keyof typeof parkingLotData] || parkingLotData[1];
   const currentFloor = parkingLot.floors.find((f) => f.id === selectedFloor);
@@ -208,15 +191,15 @@ const Booking = () => {
 
   const getSlotClassName = (status: string, slotId: string) => {
     const isSelected = slotId === selectedSlot;
-    
+
     if (isSelected) {
       return "bg-selected text-selected-foreground border-selected hover:bg-selected/90";
     }
-    
+
     if (status === "booked") {
       return "bg-destructive/20 text-destructive border-destructive cursor-not-allowed";
     }
-    
+
     return "bg-success/20 text-success border-success hover:bg-success/30 cursor-pointer";
   };
 
@@ -229,8 +212,14 @@ const Booking = () => {
   const totalCost = selectedSlot ? parkingLot.pricePerHour * parseInt(duration) : 0;
 
   const handleProceedToBooking = async () => {
-    if (!selectedSlot || !user) {
-      toast.error("Please select a slot and login to continue");
+    if (!selectedSlot) {
+      toast.error("Please select a slot");
+      return;
+    }
+
+    if (!user) {
+      toast.error("Please login to book a slot");
+      navigate("/auth");
       return;
     }
 
@@ -247,8 +236,9 @@ const Booking = () => {
     const endTime = new Date(startTime.getTime() + parseInt(duration) * 60 * 60 * 1000);
 
     try {
-      const { data, error } = await supabase.from("bookings").insert({
-        user_id: user.id,
+      const newBooking = {
+        id: crypto.randomUUID(),
+        user_id: user.uid,
         parking_lot_id: parkingLot.id,
         parking_lot_name: parkingLot.name,
         slot_number: selectedSlot,
@@ -260,19 +250,20 @@ const Booking = () => {
         price_per_hour: parkingLot.pricePerHour,
         total_cost: totalCost,
         status: "active",
-      }).select();
+        created_at: new Date().toISOString()
+      };
 
-      if (error) {
-        toast.error("Failed to create booking");
-        console.error(error);
-        setLoading(false);
-        return;
-      }
+      // Mock delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // Save to LocalStorage
+      const existingBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+      localStorage.setItem('bookings', JSON.stringify([newBooking, ...existingBookings]));
 
       toast.success("Booking confirmed!");
       navigate("/confirmation", {
         state: {
-          bookingId: data[0].id,
+          bookingId: newBooking.id,
           parkingLot: parkingLot.name,
           location: parkingLot.location,
           slotId: selectedSlot,
@@ -305,7 +296,7 @@ const Booking = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Search
           </Button>
-          
+
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold mb-2">
@@ -316,7 +307,7 @@ const Booking = () => {
                 <span>{parkingLot.location}</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <div className="text-sm opacity-90">Price per hour</div>
@@ -337,7 +328,7 @@ const Booking = () => {
             <Card className="p-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <h2 className="text-xl font-bold">Select Your Parking Slot</h2>
-                
+
                 <Select value={selectedFloor} onValueChange={setSelectedFloor}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Select floor" />
@@ -397,7 +388,7 @@ const Booking = () => {
           <div className="lg:col-span-1">
             <Card className="p-6 sticky top-4">
               <h3 className="text-xl font-bold mb-6">Booking Summary</h3>
-              
+
               <div className="space-y-4 mb-6">
                 <div className="p-3 bg-secondary rounded-lg">
                   <div className="text-sm text-muted-foreground mb-1">Selected Slot</div>

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -9,6 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Car } from "lucide-react";
 import { z } from "zod";
+import { auth } from "@/lib/firebase";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { useAuth } from "@/contexts/AuthContext";
 
 const signupSchema = z.object({
   fullName: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
@@ -25,6 +27,7 @@ const loginSchema = z.object({
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
   // Login form
@@ -38,18 +41,14 @@ const Auth = () => {
   const [signupPhone, setSignupPhone] = useState("");
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/");
-      }
-    };
-    checkUser();
-  }, [navigate]);
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const validated = loginSchema.parse({
         email: loginEmail,
@@ -57,30 +56,24 @@ const Auth = () => {
       });
 
       setLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({
-        email: validated.email,
-        password: validated.password,
-      });
-
-      if (error) {
-        toast({
-          title: "Login failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
+      await signInWithEmailAndPassword(auth, validated.email, validated.password);
 
       toast({
         title: "Welcome back!",
         description: "You've successfully logged in.",
       });
       navigate("/");
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({
           title: "Validation Error",
           description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Login failed",
+          description: error.message,
           variant: "destructive",
         });
       }
@@ -101,27 +94,14 @@ const Auth = () => {
       });
 
       setLoading(true);
-      const redirectUrl = `${window.location.origin}/`;
 
-      const { error } = await supabase.auth.signUp({
-        email: validated.email,
-        password: validated.password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: validated.fullName,
-            phone: validated.phone,
-          },
-        },
-      });
+      const userCredential = await createUserWithEmailAndPassword(auth, validated.email, validated.password);
 
-      if (error) {
-        toast({
-          title: "Signup failed",
-          description: error.message,
-          variant: "destructive",
+      // Update profile with full name
+      if (userCredential.user) {
+        await updateProfile(userCredential.user, {
+          displayName: validated.fullName
         });
-        return;
       }
 
       toast({
@@ -129,11 +109,17 @@ const Auth = () => {
         description: "Welcome to SmartPark. You can now book parking slots.",
       });
       navigate("/");
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({
           title: "Validation Error",
           description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Signup failed",
+          description: error.message,
           variant: "destructive",
         });
       }
