@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Car } from "lucide-react";
 import { z } from "zod";
 import { auth } from "@/lib/firebase";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useAuth } from "@/contexts/AuthContext";
 
 const signupSchema = z.object({
@@ -46,6 +46,64 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
+  const registerUserInLocalStorage = (firebaseUser: any, loginMethod: "Email" | "Google", phone?: string) => {
+    try {
+      const storedUsers = JSON.parse(localStorage.getItem("admin_registered_users") || "[]");
+      const userIndex = storedUsers.findIndex((u: any) => u.uid === firebaseUser.uid);
+      
+      const userRecord = {
+        uid: firebaseUser.uid,
+        name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
+        email: firebaseUser.email || "",
+        photoURL: firebaseUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${firebaseUser.uid}`,
+        phone: phone || firebaseUser.phoneNumber || "N/A",
+        registeredAt: firebaseUser.metadata?.creationTime || new Date().toISOString(),
+        lastLoginAt: new Date().toISOString(),
+        loginMethod: loginMethod
+      };
+
+      if (userIndex >= 0) {
+        storedUsers[userIndex] = {
+          ...storedUsers[userIndex],
+          name: userRecord.name,
+          email: userRecord.email,
+          photoURL: userRecord.photoURL,
+          lastLoginAt: userRecord.lastLoginAt,
+          loginMethod: loginMethod,
+          phone: phone || storedUsers[userIndex].phone || userRecord.phone
+        };
+      } else {
+        storedUsers.push(userRecord);
+      }
+
+      localStorage.setItem("admin_registered_users", JSON.stringify(storedUsers));
+    } catch (err) {
+      console.error("Error saving user to admin registry:", err);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      registerUserInLocalStorage(userCredential.user, "Google");
+      toast({
+        title: "Welcome back!",
+        description: "Successfully authenticated with Google.",
+      });
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Google login failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -56,7 +114,8 @@ const Auth = () => {
       });
 
       setLoading(true);
-      await signInWithEmailAndPassword(auth, validated.email, validated.password);
+      const userCredential = await signInWithEmailAndPassword(auth, validated.email, validated.password);
+      registerUserInLocalStorage(userCredential.user, "Email");
 
       toast({
         title: "Welcome back!",
@@ -102,6 +161,13 @@ const Auth = () => {
         await updateProfile(userCredential.user, {
           displayName: validated.fullName
         });
+
+        // Use updated details
+        const updatedUser = {
+          ...userCredential.user,
+          displayName: validated.fullName
+        };
+        registerUserInLocalStorage(updatedUser, "Email", validated.phone);
       }
 
       toast({
@@ -240,6 +306,35 @@ const Auth = () => {
             </form>
           </TabsContent>
         </Tabs>
+
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        {/* Google Login Button */}
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full border-2 hover:bg-secondary/20 flex items-center justify-center gap-2 font-bold"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+        >
+          <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+          </svg>
+          {loading ? "Authenticating..." : "Sign in with Google"}
+        </Button>
       </Card>
     </div>
   );

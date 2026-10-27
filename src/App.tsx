@@ -14,11 +14,8 @@ import AdminLayout from "./components/layouts/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminBookings from "./pages/admin/AdminBookings";
 import AdminUsers from "./pages/admin/AdminUsers";
-// ... other imports
-
-// ...
-
-// ...
+import AdminMaintenance from "./pages/admin/AdminMaintenance";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -30,17 +27,18 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/booking/:id" element={<Booking />} />
-            <Route path="/confirmation" element={<Confirmation />} />
-            <Route path="/my-bookings" element={<MyBookings />} />
+            <Route path="/booking/:id" element={<ProtectedRoute><Booking /></ProtectedRoute>} />
+            <Route path="/confirmation" element={<ProtectedRoute><Confirmation /></ProtectedRoute>} />
+            <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="bookings" element={<AdminBookings />} />
-              <Route path="users" element={<div>User Management (Coming Soon)</div>} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="maintenance" element={<AdminMaintenance />} />
             </Route>
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

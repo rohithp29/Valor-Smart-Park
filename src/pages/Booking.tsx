@@ -158,6 +158,90 @@ const parkingLotData = {
       },
     ],
   },
+  7: {
+    id: 7,
+    name: "Anna Nagar Tower Parking",
+    location: "Anna Nagar, Chennai",
+    pricePerHour: 45,
+    floors: [
+      {
+        id: "F1",
+        name: "Floor 1",
+        slots: Array.from({ length: 40 }, (_, i) => ({
+          id: `F1-${i + 1}`,
+          number: i + 1,
+          type: i % 2 === 0 ? "bike" : "car",
+          status: Math.random() > 0.35 ? "available" : "booked",
+        })),
+      },
+      {
+        id: "F2",
+        name: "Floor 2",
+        slots: Array.from({ length: 40 }, (_, i) => ({
+          id: `F2-${i + 1}`,
+          number: i + 1,
+          type: i % 2 === 0 ? "bike" : "car",
+          status: Math.random() > 0.5 ? "available" : "booked",
+        })),
+      },
+    ],
+  },
+  8: {
+    id: 8,
+    name: "Poonamalle Metro Parking",
+    location: "Poonamallee, Chennai",
+    pricePerHour: 25,
+    floors: [
+      {
+        id: "F1",
+        name: "Floor 1",
+        slots: Array.from({ length: 50 }, (_, i) => ({
+          id: `F1-${i + 1}`,
+          number: i + 1,
+          type: i % 3 === 0 ? "ev" : i % 2 === 0 ? "bike" : "car",
+          status: Math.random() > 0.4 ? "available" : "booked",
+        })),
+      },
+      {
+        id: "F2",
+        name: "Floor 2",
+        slots: Array.from({ length: 50 }, (_, i) => ({
+          id: `F2-${i + 1}`,
+          number: i + 1,
+          type: i % 3 === 0 ? "ev" : i % 2 === 0 ? "bike" : "car",
+          status: Math.random() > 0.4 ? "available" : "booked",
+        })),
+      },
+    ],
+  },
+  9: {
+    id: 9,
+    name: "Tambaram Railway Station Parking",
+    location: "Tambaram, Chennai",
+    pricePerHour: 30,
+    floors: [
+      {
+        id: "F1",
+        name: "Floor 1",
+        slots: Array.from({ length: 100 }, (_, i) => ({
+          id: `F1-${i + 1}`,
+          number: i + 1,
+          type: i % 3 === 0 ? "ev" : i % 2 === 0 ? "bike" : "car",
+          status: Math.random() > 0.5 ? "available" : "booked",
+        })),
+      },
+      {
+        id: "F2",
+        name: "Floor 2",
+        slots: Array.from({ length: 100 }, (_, i) => ({
+          id: `F2-${i + 1}`,
+          number: i + 1,
+          type: i % 3 === 0 ? "ev" : i % 2 === 0 ? "bike" : "car",
+          status: Math.random() > 0.5 ? "available" : "booked",
+        })),
+      },
+    ],
+  },
 };
 
 type SlotStatus = "available" | "booked" | "selected";

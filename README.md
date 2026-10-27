@@ -1,73 +1,118 @@
-# Welcome to your Lovable project
+# 🚗 Smart Park
 
-## Project info
+![Smart Park It Banner](./public/docs/banner.png)
 
-**URL**: https://lovable.dev/projects/7ef70a14-89f9-4f5c-91d0-5a2074ca6c4b
+**Smart Park It** is a modern, full-stack parking management and booking solution designed to streamline the urban parking experience. Built with a focus on speed, security, and user-centric design, it provides a seamless platform for both users to find parking and administrators to manage assets.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## ✨ Key Features
 
-**Use Lovable**
+### 👤 User Features
+- **Smart Booking**: Intuitive interface to find and reserve parking spots in seconds.
+- **Secure Authentication**: Seamless login and signup powered by Firebase.
+- **Digital Tickets**: Instant booking confirmation with QR codes for contactless entry/exit.
+- **Booking History**: Keep track of all your past and upcoming reservations in one place.
+- **Real-time Notifications**: Instant feedback on booking status and confirmations.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7ef70a14-89f9-4f5c-91d0-5a2074ca6c4b) and start prompting.
+### 🔐 Admin Features
+- **Analytics Dashboard**: High-level overview of bookings, users, and revenue with interactive charts.
+- **Booking Management**: Full control over all system reservations with filterable views.
+- **User Administration**: Manage system users and monitor activity.
+- **Responsive Layout**: Fully optimized for desktop and mobile administrative tasks.
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## 🛠️ Tech Stack
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Frontend**: [React](https://reactjs.org/) + [Vite](https://vitejs.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/) (Radix UI)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **State Management**: [TanStack Query](https://tanstack.com/query/latest)
+- **Backend/Auth**: [Firebase](https://firebase.google.com/)
+- **Forms**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/)
+- **Charts**: [Recharts](https://recharts.org/)
+- **QR Codes**: [React QR Code](https://github.com/rosskhanas/react-qr-code)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+---
 
-Follow these steps:
+## 🚀 Getting Started
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18.x or higher)
+- [npm](https://www.npmjs.com/) or [bun](https://bun.sh/)
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Installation
 
-# Step 3: Install the necessary dependencies.
-npm i
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Sundar12v/easy-park-it.git
+   cd easy-park-it
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or if using bun
+   bun install
+   ```
+
+3. **Set up Environment Variables**
+   Create a `.env` file in the root directory and add your Firebase configurations:
+   ```env
+   VITE_FIREBASE_API_KEY=your_api_key
+   VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+   VITE_FIREBASE_PROJECT_ID=your_project_id
+   VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+   VITE_FIREBASE_APP_ID=your_app_id
+   ```
+
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 📂 Project Structure
+
+```
+easy-park-it/
+├── src/
+│   ├── components/     # Reusable UI & Layout components
+│   ├── contexts/       # Auth and Global state contexts
+│   ├── hooks/          # Custom React hooks
+│   ├── lib/            # External library configurations (Firebase, etc.)
+│   ├── pages/          # Application routes (User & Admin)
+│   └── App.tsx         # Main application entry and routing
+├── public/             # Static assets
+├── supabase/           # Database migrations and config
+└── tailwind.config.ts  # Theme and styling configuration
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🤝 Contributing
 
-**Use GitHub Codespaces**
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git checkout origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## 📄 License
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Distributed under the MIT License. See `LICENSE` for more information.
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/7ef70a14-89f9-4f5c-91d0-5a2074ca6c4b) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+<p align="center">
+  Built with ❤️ by <a href="https://github.com/Sundar12v">Sundar12v</a>
+</p>

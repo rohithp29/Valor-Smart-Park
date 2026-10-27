@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Calendar, Users, LogOut, Menu } from "lucide-react";
+import { LayoutDashboard, Calendar, Users, LogOut, Menu, Wrench } from "lucide-react";
 
 const AdminLayout = () => {
     const navigate = useNavigate();
@@ -33,6 +33,11 @@ const AdminLayout = () => {
             label: "Users",
             icon: Users,
             path: "/admin/users",
+        },
+        {
+            label: "Maintenance Logs",
+            icon: Wrench,
+            path: "/admin/maintenance",
         },
     ];
 
